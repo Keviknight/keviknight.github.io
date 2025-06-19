@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Unblocked Games</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #1e1e1e;
+      color: #fff;
+    }
+
+    header {
+      padding: 20px;
+      background: #333;
+      text-align: center;
+    }
+
+    input#searchInput {
+      padding: 10px;
+      margin-top: 10px;
+      width: 60%;
+      max-width: 300px;
+      border: none;
+      border-radius: 5px;
+    }
+
+    main {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .game-card {
+      background: #2c2c2c;
+      margin: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      width: 150px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .game-card:hover {
+      transform: scale(1.05);
+      background: #444;
+    }
+
+    .game-card img {
+      width: 100%;
+      border-radius: 5px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 10;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.9);
+    }
+
+    .modal-content {
+      background-color: #222;
+      margin: 5% auto;
+      padding: 20px;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 900px;
+      position: relative;
+    }
+
+    .modal-content iframe {
+      width: 100%;
+      height: 500px;
+      border: none;
+    }
+
+    .close {
+      color: #aaa;
+      position: absolute;
+      right: 20px;
+      top: 10px;
+      font-size: 28px;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Keviknight Games</h1>
+    <h2>My Own Handcoded Games<h2>
+    <input type="text" id="searchInput" placeholder="Search games..." onkeyup="searchGames()">
+  </header>
+
+  <main id="gameList">
+    <!-- Example games -->
+    <div class="game-card" onclick="openGame('Game 1', 'https://example.com/game1')">
+      <img src="https://via.placeholder.com/150" alt="Game 1">
+      <p>Game 1</p>
+    </div>
+
+    <div class="game-card" onclick="openGame('Game 2', 'https://example.com/game2')">
+      <img src="https://via.placeholder.com/150" alt="Game 2">
+      <p>Game 2</p>
+    </div>
+
+    <!-- Add more game cards here -->
+  </main>
+
+  <!-- Modal -->
+  <div id="gameModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeGame()">&times;</span>
+      <h2 id="gameTitle"></h2>
+      <iframe id="gameFrame" src="" frameborder="0"></iframe>
+    </div>
+  </div>
+
+  <script>
+    function openGame(title, url) {
+      document.getElementById('gameTitle').innerText = title;
+      document.getElementById('gameFrame').src = url;
+      document.getElementById('gameModal').style.display = 'block';
+    }
+
+    function closeGame() {
+      document.getElementById('gameModal').style.display = 'none';
+      document.getElementById('gameFrame').src = '';
+    }
+
+    function searchGames() {
+      const input = document.getElementById('searchInput').value.toLowerCase();
+      const cards = document.querySelectorAll('.game-card');
+      cards.forEach(card => {
+        const title = card.textContent.toLowerCase();
+        card.style.display = title.includes(input) ? 'block' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
