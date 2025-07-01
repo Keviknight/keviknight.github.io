@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Text Space Invaders with Vertical Levels</title>
+<style>
+  body {
+    background: black;
+    color: white;
+    margin: 0;
+    overflow: hidden;
+    font-family: monospace;
+  }
+  canvas {
+    display: block;
+    margin: auto;
+    background: black;
+  }
+</style>
+</head>
+<body>
+<canvas id="game" width="800" height="600"></canvas>
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+const WIDTH = canvas.width;
+const HEIGHT = canvas.height;
+ctx.font = "16px monospace";
+
+const CHAR_PLAYER = "^";
+const CHAR_ALIEN = "A";
+const CHAR_BULLET = "|";
+const CHAR_SHIELD = "#";
+
+let gameState = "title";
+
+const keys = {};
+
+class Player {
+  constructor() {
+    this.x = WIDTH / 2;
+    this.y = HEIGHT - 40;
+    this.cooldown = 0;
+    this.lives = 3;
+  }
+
+  move() {
+    if (keys["ArrowLeft"] && this.x > 20) this.x -= 5;
+    if (keys["ArrowRight"] && this.x < WIDTH - 20) this.x += 5;
+
+    const playerBulletExists = bullets.some(b => b.owner === "player");
+    if (keys[" "] && this.cooldown === 0 && !playerBulletExists) {
+      bullets.push(new Bullet(this.x, this.y - 10, -10, "player"));
+      this.cooldown = 20;
+    }
+
+    if (this.cooldown > 0) this.cooldown--;
+  }
+
+  draw() {
+    ctx.fillStyle = "white";
+    ctx.fillText(CHAR_PLAYER, this.x, this.y);
+  }
+}
+
+class Alien {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.alive = true;
+  }
+
+  draw() {
+    if (this.alive) {
+      ctx.fillStyle = "lime";
+      ctx.fillText(CHAR_ALIEN, this.x, this.y);
+    }
+  }
+}
+
+class Bullet {
+  constructor(x, y, dy, owner) {
+    this.x = x;
+    this.y = y;
+    this.dy = dy;
+    this.owner = owner;
+  }
+
+  move() {
+    this.y += this.dy;
+  }
+
+  draw() {
+    ctx.fillStyle = "white";
+    ctx.fillText(CHAR_BULLET, this.x, this.y);
+  }
+}
+
+class ShieldBlock {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.health = 3;
+  }
+
+  draw() {
+    if (this.health > 0) {
+      ctx.fillStyle = "green";
+      ctx.fillText(CHAR_SHIELD, this.x, this.y);
+    }
+  }
+}
+
+const player = new Player();
+const bullets = [];
+const aliens = [];
+const shields = [];
+
+let alienDx = 10;
+let stepCount = 0;
+let alienShootCooldown = 100;
+let score = 0;
+let level = 1;
+const alienColumns = 11; // fixed columns
+let alienRows = 5; // base rows
+
+function resetGame() {
+  bullets.length = 0;
+  aliens.length = 0;
+  shields.length = 0;
+  player.x = WIDTH / 2;
+  player.lives = 3;
+  score = 0;
+  level = 1;
+  alienDx = 10;
+  stepCount = 0;
+  alienShootCooldown = 100;
+  createAliens();
+  createShields();
+}
+
+function createAliens() {
+  aliens.length = 0;
+  const totalRows = alienRows + (level - 1); // add one row per level
+  const startX = 40;
+  const spacingX = 35;
+  const spacingY = 30;
+
+  for (let r = 0; r < totalRows; r++) {
+    for (let c = 0; c < alienColumns; c++) {
+      aliens.push(new Alien(startX + c * spacingX, 40 + r * spacingY));
+    }
+  }
+}
+
+function createShields() {
+  shields.length = 0;
+  for (let shieldNum = 0; shieldNum < 4; shieldNum++) {
+    let baseX = 100 + shieldNum * 170;
+    let baseY = HEIGHT - 140;
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 4; col++) {
+        shields.push(new ShieldBlock(baseX + col * 12, baseY + row * 14));
+      }
+    }
+  }
+}
+
+function updateGame() {
+  player.move();
+
+  bullets.forEach((b, i) => {
+    b.move();
+    if (b.y < 0 || b.y > HEIGHT) bullets.splice(i, 1);
+  });
+
+  const aliveAliens = aliens.filter(a => a.alive);
+  let speedMultiplier = 1 + (((alienRows * alienColumns + (level - 1) * alienColumns) - aliveAliens.length) / (alienRows * alienColumns + (level - 1) * alienColumns));
+
+  stepCount++;
+  if (stepCount > 30 / speedMultiplier) {
+    stepCount = 0;
+    let maxX = Math.max(...aliveAliens.map(a => a.x));
+    let minX = Math.min(...aliveAliens.map(a => a.x));
+    if (maxX + alienDx > WIDTH - 20 || minX + alienDx < 20) {
+      alienDx *= -1;
+      aliens.forEach(a => {
+        if (a.alive) a.y += 20;
+      });
+
+      for (let a of aliens) {
+        if (a.alive && a.y >= player.y - 20) {
+          player.lives--;
+          if (player.lives <= 0) {
+            gameState = "gameover";
+          } else {
+            resetPositionsAfterLifeLost();
+          }
+          break;
+        }
+      }
+    } else {
+      aliens.forEach(a => {
+        if (a.alive) a.x += alienDx;
+      });
+    }
+  }
+
+  alienShootCooldown--;
+  const alienBulletExists = bullets.some(b => b.owner === "alien");
+  if (alienShootCooldown <= 0 && !alienBulletExists) {
+    if (aliveAliens.length > 0) {
+      const shooter = aliveAliens[Math.floor(Math.random() * aliveAliens.length)];
+      bullets.push(new Bullet(shooter.x, shooter.y + 10, 6, "alien"));
+    }
+    alienShootCooldown = 60;
+  }
+
+  bullets.forEach((b, i) => {
+    if (b.owner === "player") {
+      for (let a of aliens) {
+        if (a.alive && Math.abs(b.x - a.x) < 15 && Math.abs(b.y - a.y) < 15) {
+          a.alive = false;
+          bullets.splice(i, 1);
+          score += 10;
+          break;
+        }
+      }
+    } else if (b.owner === "alien") {
+      if (Math.abs(b.x - player.x) < 10 && Math.abs(b.y - player.y) < 15) {
+        bullets.splice(i, 1);
+        player.lives--;
+        if (player.lives <= 0) {
+          gameState = "gameover";
+        } else {
+          resetPositionsAfterLifeLost();
+        }
+      }
+    }
+
+    for (let s of shields) {
+      if (s.health > 0 && Math.abs(b.x - s.x) < 10 && Math.abs(b.y - s.y) < 15) {
+        s.health--;
+        bullets.splice(i, 1);
+        break;
+      }
+    }
+  });
+
+  if (aliveAliens.length === 0) {
+    level++;
+    bullets.length = 0;
+    aliens.length = 0;
+    createAliens();
+  }
+}
+
+function resetPositionsAfterLifeLost() {
+  bullets.length = 0;
+  player.x = WIDTH / 2;
+  aliens.forEach(a => {
+    if (a.alive) {
+      const totalRows = alienRows + (level - 1);
+      const spacingX = 35;
+      const spacingY = 30;
+      let col = Math.round((a.x - 40) / spacingX);
+      let row = Math.round((a.y - 40) / spacingY);
+      if(row < 0) row = 0;
+      if(col < 0) col = 0;
+      a.x = 40 + col * spacingX;
+      a.y = 40 + row * spacingY;
+    }
+  });
+  alienDx = 10;
+  stepCount = 0;
+  alienShootCooldown = 100;
+}
+
+function drawGame() {
+  player.draw();
+  bullets.forEach(b => b.draw());
+  aliens.forEach(a => a.draw());
+  shields.forEach(s => s.draw());
+
+  ctx.fillStyle = "white";
+  ctx.font = "18px monospace";
+  ctx.fillText(`Score: ${score}`, 10, 20);
+  ctx.fillText(`Lives: ${player.lives}`, WIDTH - 110, 20);
+
+  ctx.textAlign = "center";
+  ctx.fillText(`Level: ${level}`, WIDTH / 2, 20);
+  ctx.textAlign = "start";
+}
+
+function drawTitleScreen() {
+  ctx.fillStyle = "white";
+  ctx.font = "32px monospace";
+  ctx.fillText("SPACE INVADERS", WIDTH / 2 - 170, 200);
+
+  ctx.font = "20px monospace";
+  ctx.fillText("Use Arrow Keys to Move", WIDTH / 2 - 150, 280);
+  ctx.fillText("Press Space to Shoot", WIDTH / 2 - 130, 310);
+  ctx.fillText("Press ENTER to Start", WIDTH / 2 - 150, 370);
+}
+
+function drawEndScreen(message) {
+  ctx.fillStyle = "white";
+  ctx.font = "32px monospace";
+  ctx.fillText(message, WIDTH / 2 - 100, 250);
+
+  ctx.font = "20px monospace";
+  ctx.fillText("Press ENTER to Return to Title", WIDTH / 2 - 180, 320);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+  if (gameState === "title") {
+    drawTitleScreen();
+  } else if (gameState === "playing") {
+    drawGame();
+  } else if (gameState === "gameover") {
+    drawEndScreen("GAME OVER");
+  } else if (gameState === "win") {
+    drawEndScreen("YOU WIN!");
+  }
+}
+
+function loop() {
+  if (gameState === "playing") {
+    updateGame();
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+
+window.addEventListener("keydown", e => {
+  keys[e.key] = true;
+
+  if (e.key === "Enter") {
+    if (gameState === "title") {
+      resetGame();
+      gameState = "playing";
+    } else if (gameState === "gameover" || gameState === "win") {
+      gameState = "title";
+    }
+  }
+});
+
+window.addEventListener("keyup", e => keys[e.key] = false);
+</script>
+</body>
+</html>
