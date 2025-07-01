@@ -1,7 +1,8 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Keviknight Games</title>
 
   <style>
@@ -60,29 +61,29 @@
   <header>
     <h1>Keviknight Games</h1>
     <h2>My Own Handcoded Games</h2>
-    <input type="text" id="searchInput" placeholder="Search games..." onkeyup="searchGames()">
+    <input type="text" id="searchInput" placeholder="Search games..." onkeyup="searchGames()" />
   </header>
 
   <main id="gameList">
-    <!-- Example games -->
-    <div class="game-card" onclick="openGame('Text Invaders', 'https://keviknight.github.io/TextInvaders.html')">
-      <img src="https://via.placeholder.com/150" alt="Text Invaders">
+    <!-- Game card that opens the link in a new tab -->
+    <div
+      class="game-card"
+      onclick="window.open('https://keviknight.github.io/TextInvaders.html', '_blank')"
+    >
+      <img src="https://via.placeholder.com/150" alt="Text Invaders" />
       <p>Game 1</p>
     </div>
 
-    <div class="game-card" onclick="openGame('Game 2', 'https://example.com/game2')">
-      <img src="https://via.placeholder.com/150" alt="Game 2">
+    <div
+      class="game-card"
+      onclick="window.open('https://example.com/game2', '_blank')"
+    >
+      <img src="https://via.placeholder.com/150" alt="Game 2" />
       <p>Game 2</p>
     </div>
-
-    <!-- Add more game cards here -->
   </main>
 
   <script>
-    function openGame(title, url) {
-      window.open(url, '_blank');
-    }
-
     function searchGames() {
       const input = document.getElementById('searchInput').value.toLowerCase();
       const cards = document.querySelectorAll('.game-card');
