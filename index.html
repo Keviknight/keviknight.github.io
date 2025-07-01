@@ -91,25 +91,57 @@
       top: 10px;
       font-size: 28px;
       cursor: pointer;
+      user-select: none;
     }
 
     .close:hover {
       color: #fff;
+    }
+
+    /* Fullscreen styles */
+
+    /* When modal is fullscreen, make iframe and container fill viewport */
+    :fullscreen #gameModal,
+    :-webkit-full-screen #gameModal,
+    :-ms-fullscreen #gameModal {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      border-radius: 0;
+      background-color: #000;
+    }
+
+    :fullscreen .modal-content,
+    :-webkit-full-screen .modal-content,
+    :-ms-fullscreen .modal-content {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      border-radius: 0;
+      padding: 0;
+    }
+
+    :fullscreen iframe,
+    :-webkit-full-screen iframe,
+    :-ms-fullscreen iframe {
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
     }
   </style>
 </head>
 <body>
   <header>
     <h1>Keviknight Games</h1>
-    <h2>My Own Handcoded Games<h2>
+    <h2>My Own Handcoded Games</h2>
     <input type="text" id="searchInput" placeholder="Search games..." onkeyup="searchGames()">
   </header>
 
   <main id="gameList">
     <!-- Example games -->
-    <div class="game-card" onclick="openGame('Text Invaders', 'keviknight.github.io/TextInvaders.html')">
+    <div class="game-card" onclick="openGame('Text Invaders', 'https://keviknight.github.io/TextInvaders.html')">
       <img src="https://via.placeholder.com/150" alt="Text Invaders">
-      <p>Game 1</p>
+      <p>Text Invaders</p>
     </div>
 
     <div class="game-card" onclick="openGame('Game 2', 'https://example.com/game2')">
@@ -125,20 +157,41 @@
     <div class="modal-content">
       <span class="close" onclick="closeGame()">&times;</span>
       <h2 id="gameTitle"></h2>
-      <iframe id="gameFrame" src="" frameborder="0"></iframe>
+      <iframe id="gameFrame" src="" frameborder="0" allowfullscreen></iframe>
     </div>
   </div>
 
   <script>
     function openGame(title, url) {
+      const modal = document.getElementById('gameModal');
+      const iframe = document.getElementById('gameFrame');
       document.getElementById('gameTitle').innerText = title;
-      document.getElementById('gameFrame').src = url;
-      document.getElementById('gameModal').style.display = 'block';
+      iframe.src = url;
+      modal.style.display = 'block';
+
+      // Request fullscreen on modal for fullscreen experience
+      if (modal.requestFullscreen) {
+        modal.requestFullscreen();
+      } else if (modal.webkitRequestFullscreen) { /* Safari */
+        modal.webkitRequestFullscreen();
+      } else if (modal.msRequestFullscreen) { /* IE11 */
+        modal.msRequestFullscreen();
+      }
     }
 
     function closeGame() {
-      document.getElementById('gameModal').style.display = 'none';
+      const modal = document.getElementById('gameModal');
+      modal.style.display = 'none';
       document.getElementById('gameFrame').src = '';
+
+      // Exit fullscreen on close
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) { /* Safari */
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) { /* IE11 */
+        document.msExitFullscreen();
+      }
     }
 
     function searchGames() {
