@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Keviknight Games</title>
-
   <style>
     body {
       margin: 0;
@@ -12,13 +11,11 @@
       background: #1e1e1e;
       color: #fff;
     }
-
     header {
       padding: 20px;
       background: #333;
       text-align: center;
     }
-
     input#searchInput {
       padding: 10px;
       margin-top: 10px;
@@ -27,14 +24,12 @@
       border: none;
       border-radius: 5px;
     }
-
     main {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       padding: 20px;
     }
-
     .game-card {
       background: #2c2c2c;
       margin: 15px;
@@ -45,12 +40,10 @@
       cursor: pointer;
       transition: transform 0.2s;
     }
-
     .game-card:hover {
       transform: scale(1.05);
       background: #444;
     }
-
     .game-card img {
       width: 100%;
       border-radius: 5px;
@@ -63,26 +56,16 @@
     <h2>My Own Handcoded Games</h2>
     <input type="text" id="searchInput" placeholder="Search games..." onkeyup="searchGames()" />
   </header>
-
   <main id="gameList">
-    <!-- Game card that opens the link in a new tab -->
-    <div
-      class="game-card"
-      onclick="window.open('https://keviknight.github.io/TextInvaders.html', '_blank')"
-    >
+    <div class="game-card" onclick="window.open('https://keviknight.github.io/TextInvaders.html', '_blank')">
       <img src="https://via.placeholder.com/150" alt="Text Invaders" />
-      <p>Game 1</p>
+      <p>Text Invaders</p>
     </div>
-
-    <div
-      class="game-card"
-      onclick="window.open('https://example.com/game2', '_blank')"
-    >
+    <div class="game-card" onclick="window.open('https://example.com/game2', '_blank')">
       <img src="https://via.placeholder.com/150" alt="Game 2" />
       <p>Game 2</p>
     </div>
   </main>
-
   <script>
     function searchGames() {
       const input = document.getElementById('searchInput').value.toLowerCase();
